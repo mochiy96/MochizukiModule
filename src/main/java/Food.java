@@ -8,13 +8,6 @@ public class Food {
     public String toString(){
         return "name = " + name;
     }
-
-    public String getName(){
-        return name;
-    }
-    public String getDexcription(){
-        return description;
-    }
 }
 
 class FoodColors{
@@ -22,6 +15,6 @@ class FoodColors{
 }
 
 class Nutrients{
-    public int energy, vegetable;
+    public int energy, vegetables;
     public double protein, lipid, carbohydrate, salt, calcium;
 }
