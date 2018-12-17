@@ -16,76 +16,78 @@ import java.util.stream.Collectors;
 public class Reply2Utterance {
 
     public static ArrayList<Food> foodList;
-    public static List<Integer> found_food = new ArrayList<>();
-    public static List<Integer> pre_food = new ArrayList<>();
+    public static List<Integer> foundFoodsIndex = new ArrayList<>();
+    public static List<Integer> preFoodsIndex = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
 
-        foodList = new ObjectMapper().readValue(readAll("FoodInfo.json"), new TypeReference<ArrayList<Food>>(){});
+        foodList = new ObjectMapper().readValue(readAll
+                ("FoodInfo.json"), new TypeReference<ArrayList<Food>>(){});
 
         while(true){
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String user = reader.readLine();
-            found_food.clear();
+            String recvdInput = reader.readLine();      // recvd = received
+            foundFoodsIndex.clear();
 
-            if(has_food(user)){
-                checkfoodinfo(user);
+            if(recvdInputHasFood(recvdInput)){
+                checkHasFoodInfo(recvdInput);
             } else {
-                checksentence(user);
+                checkRecvdInput(recvdInput);
             }
 
-            pre_food = new ArrayList<>(found_food);
+            preFoodsIndex = new ArrayList<>(foundFoodsIndex);
 
         }
     }
 
 
-    static boolean has_food(String user){
+    static boolean recvdInputHasFood(String recvdInput){
         Tokenizer tokenizer = new Tokenizer.Builder().build();
-        List<Token> tokens = tokenizer.tokenize(user);
+        List<Token> tokens = tokenizer.tokenize(recvdInput);
         JaroWinklerDistance jaroWinklerDistance = new JaroWinklerDistance();
 
         for(int i = 0; i < foodList.size(); i++){
-            if(user.toUpperCase().contains(foodList.get(i).name)){
-                found_food.add(i);
+            if(recvdInput.toUpperCase().contains(foodList.get(i).name)){
+                foundFoodsIndex.add(i);
                 break;
             } else {
                 for(Token token : tokens){
                     if(token.getPartOfSpeechLevel1().equals("名詞") &&
-                            ((jaroWinklerDistance.getDistance(token.getBaseForm(), foodList.get(i).name)) > 0.8)){
-                        found_food.add(i);
+                            ((jaroWinklerDistance.getDistance
+                                    (token.getBaseForm(), foodList.get(i).name)) > 0.8)){
+                        foundFoodsIndex.add(i);
                     }
                 }
             }
         }
 
-        if(found_food.isEmpty()){
+        if(foundFoodsIndex.isEmpty()){
             return false;
         } else {
             return true;
         }
     }
 
-    static void checksentence(String user){
-        if(user.contains("bye")){
+    static void checkRecvdInput(String recvdInput){
+        if(recvdInput.contains("bye")){
             System.out.println("終了します");
             System.exit(1);
         }
-        if(user.contains("それ") || user.contains("その")){
-            if (user.contains("カロリー")) {
-                for (int i : pre_food){
+        if(recvdInput.contains("それ") || recvdInput.contains("その")){
+            if (recvdInput.contains("カロリー")) {
+                for (int i : preFoodsIndex){
                     System.out.println(foodList.get(i).name + "のカロリーは" +
                             foodList.get(i).nutrients.energy + "kcalです");
                 }
             }
-            if (user.contains("説明") || user.contains("詳細")) {
-                for (int i : pre_food){
+            if (recvdInput.contains("説明") || recvdInput.contains("詳細")) {
+                for (int i : preFoodsIndex){
                     System.out.println(foodList.get(i).name + "：" +
                             foodList.get(i).description);
                 }
             }
-            if (user.contains("値段")) {
-                for (int i : pre_food){
+            if (recvdInput.contains("値段")) {
+                for (int i : preFoodsIndex){
                     System.out.println(foodList.get(i).name + "の値段は" +
                             foodList.get(i).cost + "円です");
                 }
@@ -95,24 +97,24 @@ public class Reply2Utterance {
         }
     }
 
-    static void checkfoodinfo(String user){
+    static void checkHasFoodInfo(String recvdInput){
         boolean flag = true;
-        if (user.contains("カロリー")) {
-            for (int i : found_food){
+        if (recvdInput.contains("カロリー")) {
+            for (int i : foundFoodsIndex){
                 System.out.println(foodList.get(i).name + "のカロリーは" +
                         foodList.get(i).nutrients.energy + "kcalです");
             }
             flag = false;
         }
-        if (user.contains("説明") || user.contains("詳細")) {
-            for (int i : found_food){
+        if (recvdInput.contains("説明") || recvdInput.contains("詳細")) {
+            for (int i : foundFoodsIndex){
                 System.out.println(foodList.get(i).name + "：" +
                         foodList.get(i).description);
             }
             flag = false;
         }
-        if (user.contains("値段")) {
-            for (int i : found_food){
+        if (recvdInput.contains("値段")) {
+            for (int i : foundFoodsIndex){
                 System.out.println(foodList.get(i).name + "の値段は" +
                         foodList.get(i).cost + "円です");
             }
