@@ -15,15 +15,15 @@ public class MakeDBtoJSON {
         Connection connection = null;
         Statement statement = null;
 
-        String databasename = "Food-dbase.db";  //データベースファイル名
-        String filename= "FoodInfo.json";		//JSONファイル名
+        String databeseName = "Food-dbase.db";  //データベースファイル名
+        String fileName= "FoodInfo.json";		//JSONファイル名
 
-        String table_name = "food";
+        String tableName = "food";              //データベースのテーブル名
 
         String[] column = {"name", "cost"};
-        boolean has_group = true;
+        boolean hasGroup = true;
         Map<String, List<String>> map = new HashMap<>();
-        String[] column_group = {"foodColors", "nutrients"};
+        String[] columnGroup = {"foodColors", "nutrients"};
 
         List<String> foodColors = new ArrayList<>();
         List<String> nutrients = new ArrayList<>();
@@ -35,7 +35,7 @@ public class MakeDBtoJSON {
         map.put("nutrients", nutrients);
 
         /* ファイルの確認 */
-        File file = new File(filename);
+        File file = new File(fileName);
         if(file.exists()) {	//書き込みファイル先の確認
             file.delete();
         }
@@ -46,9 +46,9 @@ public class MakeDBtoJSON {
             PrintWriter pw = new PrintWriter(new BufferedWriter(new
                     OutputStreamWriter(new FileOutputStream(file),"UTF-8")));
 
-            connection = DriverManager.getConnection("jdbc:sqlite:" + databasename);
+            connection = DriverManager.getConnection("jdbc:sqlite:" + databeseName);
             statement = connection.createStatement();
-            String sql = "select * from " + table_name;
+            String sql = "select * from " + tableName;
             ResultSet rs = statement.executeQuery(sql);
 
             int cnt = 0;
@@ -58,7 +58,7 @@ public class MakeDBtoJSON {
                 if(cnt == 0){
                     pw.println("    {");
                     for(int i = 0; i < column.length; i++){
-                        if(has_group){
+                        if(hasGroup){
                             pw.println("        \"" + column[i] + "\":\"" + rs.getString(column[i]) + "\",");
                         }else{
                             if(i == (column.length - 1)){
@@ -68,16 +68,16 @@ public class MakeDBtoJSON {
                             }
                         }
                     }
-                    for(int i = 0; i < column_group.length; i++){
-                        pw.println("        \"" + column_group[i] + "\":{");
-                        for(int j = 0; j < map.get(column_group[i]).size(); j++){
-                            if(j == (map.get(column_group[i]).size()-1)){
-                                pw.println("            \"" + map.get(column_group[i]).get(j) + "\":\"" + rs.getString(map.get(column_group[i]).get(j)) + "\"");
+                    for(int i = 0; i < columnGroup.length; i++){
+                        pw.println("        \"" + columnGroup[i] + "\":{");
+                        for(int j = 0; j < map.get(columnGroup[i]).size(); j++){
+                            if(j == (map.get(columnGroup[i]).size()-1)){
+                                pw.println("            \"" + map.get(columnGroup[i]).get(j) + "\":\"" + rs.getString(map.get(columnGroup[i]).get(j)) + "\"");
                             }else{
-                                pw.println("            \"" + map.get(column_group[i]).get(j) + "\":\"" + rs.getString(map.get(column_group[i]).get(j)) + "\",");
+                                pw.println("            \"" + map.get(columnGroup[i]).get(j) + "\":\"" + rs.getString(map.get(columnGroup[i]).get(j)) + "\",");
                             }
                         }
-                        if(i == (column_group.length - 1)){
+                        if(i == (columnGroup.length - 1)){
                             pw.println("        }");
                         }else{
                             pw.println("        },");
@@ -88,7 +88,7 @@ public class MakeDBtoJSON {
                     pw.println(",");
                     pw.println("    {");
                     for(int i = 0; i < column.length; i++){
-                        if(has_group){
+                        if(hasGroup){
                             pw.println("        \"" + column[i] + "\":\"" + rs.getString(column[i]) + "\",");
                         }else{
                             if(i == (column.length - 1)){
@@ -98,16 +98,16 @@ public class MakeDBtoJSON {
                             }
                         }
                     }
-                    for(int i = 0; i < column_group.length; i++){
-                        pw.println("        \"" + column_group[i] + "\":{");
-                        for(int j = 0; j < map.get(column_group[i]).size(); j++){
-                            if(j == (map.get(column_group[i]).size()-1)){
-                                pw.println("            \"" + map.get(column_group[i]).get(j) + "\":\"" + rs.getString(map.get(column_group[i]).get(j)) + "\"");
+                    for(int i = 0; i < columnGroup.length; i++){
+                        pw.println("        \"" + columnGroup[i] + "\":{");
+                        for(int j = 0; j < map.get(columnGroup[i]).size(); j++){
+                            if(j == (map.get(columnGroup[i]).size()-1)){
+                                pw.println("            \"" + map.get(columnGroup[i]).get(j) + "\":\"" + rs.getString(map.get(columnGroup[i]).get(j)) + "\"");
                             }else{
-                                pw.println("            \"" + map.get(column_group[i]).get(j) + "\":\"" + rs.getString(map.get(column_group[i]).get(j)) + "\",");
+                                pw.println("            \"" + map.get(columnGroup[i]).get(j) + "\":\"" + rs.getString(map.get(columnGroup[i]).get(j)) + "\",");
                             }
                         }
-                        if(i == (column_group.length - 1)){
+                        if(i == (columnGroup.length - 1)){
                             pw.println("        }");
                         }else{
                             pw.println("        },");
