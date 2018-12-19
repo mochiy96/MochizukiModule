@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.atilika.kuromoji.ipadic.Token;
 import com.atilika.kuromoji.ipadic.Tokenizer;
-import org.apache.lucene.search.spell.JaroWinklerDistance;
 
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -16,8 +15,8 @@ import java.util.stream.Collectors;
 public class Reply2Utterance {
 
     public static ArrayList<Food> foodList;
-    public static List<Integer> foundFoodsIndex = new ArrayList<>();
-    public static List<Integer> preFoodsIndex = new ArrayList<>();
+    public static List<Integer> foundFoodIndex = new ArrayList<>();
+    public static List<Integer> preFoodIndex = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
 
@@ -26,68 +25,67 @@ public class Reply2Utterance {
 
         while(true){
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String recvdInput = reader.readLine();      // recvd = received
-            foundFoodsIndex.clear();
+            String receivedInput = reader.readLine();
+            foundFoodIndex.clear();
 
-            if(recvdInputHasFood(recvdInput)){
-                checkHasFoodInfo(recvdInput);
+            if(receivedInputHasFood(receivedInput)){
+                containsFoodInfo(receivedInput);
             } else {
-                checkRecvdInput(recvdInput);
+                checkReceivedInput(receivedInput);
             }
 
-            preFoodsIndex = new ArrayList<>(foundFoodsIndex);
+            if(!foundFoodIndex.isEmpty()){
+                preFoodIndex = new ArrayList<>(foundFoodIndex);
+            }
 
         }
     }
 
-
-    static boolean recvdInputHasFood(String recvdInput){
+    static boolean receivedInputHasFood(String receivedInput){
         Tokenizer tokenizer = new Tokenizer.Builder().build();
-        List<Token> tokens = tokenizer.tokenize(recvdInput);
-        JaroWinklerDistance jaroWinklerDistance = new JaroWinklerDistance();
+        List<Token> tokens = tokenizer.tokenize(receivedInput);
 
         for(int i = 0; i < foodList.size(); i++){
-            if(recvdInput.toUpperCase().contains(foodList.get(i).name)){
-                foundFoodsIndex.add(i);
+            if(receivedInput.toUpperCase().contains(foodList.get(i).name)){
+                foundFoodIndex.add(i);
                 break;
             } else {
                 for(Token token : tokens){
                     if(token.getPartOfSpeechLevel1().equals("名詞") &&
-                            ((jaroWinklerDistance.getDistance
-                                    (token.getBaseForm(), foodList.get(i).name)) > 0.8)){
-                        foundFoodsIndex.add(i);
+                            (foodList.get(i).name.contains(token.getBaseForm()))){
+                        foundFoodIndex.add(i);
                     }
                 }
             }
         }
 
-        if(foundFoodsIndex.isEmpty()){
+        if(foundFoodIndex.isEmpty()){
             return false;
         } else {
             return true;
         }
     }
 
-    static void checkRecvdInput(String recvdInput){
-        if(recvdInput.contains("bye")){
+    static void checkReceivedInput(String receivedInput){
+        if(receivedInput.contains("bye")){
             System.out.println("終了します");
             System.exit(1);
         }
-        if(recvdInput.contains("それ") || recvdInput.contains("その")){
-            if (recvdInput.contains("カロリー")) {
-                for (int i : preFoodsIndex){
+        if(receivedInput.contains("それ") || receivedInput.contains("その")){
+            if (receivedInput.contains("カロリー")) {
+                for (int i : preFoodIndex){
                     System.out.println(foodList.get(i).name + "のカロリーは" +
                             foodList.get(i).nutrients.energy + "kcalです");
                 }
             }
-            if (recvdInput.contains("説明") || recvdInput.contains("詳細")) {
-                for (int i : preFoodsIndex){
+            if (receivedInput.contains("説明") || receivedInput.contains("詳細")) {
+                for (int i : preFoodIndex){
                     System.out.println(foodList.get(i).name + "：" +
                             foodList.get(i).description);
                 }
             }
-            if (recvdInput.contains("値段")) {
-                for (int i : preFoodsIndex){
+            if (receivedInput.contains("値段")) {
+                for (int i : preFoodIndex){
                     System.out.println(foodList.get(i).name + "の値段は" +
                             foodList.get(i).cost + "円です");
                 }
@@ -97,24 +95,24 @@ public class Reply2Utterance {
         }
     }
 
-    static void checkHasFoodInfo(String recvdInput){
+    static void containsFoodInfo(String receivedInput){
         boolean flag = true;
-        if (recvdInput.contains("カロリー")) {
-            for (int i : foundFoodsIndex){
+        if (receivedInput.contains("カロリー")) {
+            for (int i : foundFoodIndex){
                 System.out.println(foodList.get(i).name + "のカロリーは" +
                         foodList.get(i).nutrients.energy + "kcalです");
             }
             flag = false;
         }
-        if (recvdInput.contains("説明") || recvdInput.contains("詳細")) {
-            for (int i : foundFoodsIndex){
+        if (receivedInput.contains("説明") || receivedInput.contains("詳細")) {
+            for (int i : foundFoodIndex){
                 System.out.println(foodList.get(i).name + "：" +
                         foodList.get(i).description);
             }
             flag = false;
         }
-        if (recvdInput.contains("値段")) {
-            for (int i : foundFoodsIndex){
+        if (receivedInput.contains("値段")) {
+            for (int i : foundFoodIndex){
                 System.out.println(foodList.get(i).name + "の値段は" +
                         foodList.get(i).cost + "円です");
             }
@@ -124,6 +122,7 @@ public class Reply2Utterance {
             System.out.println("すみません、わかりません");
         }
     }
+
     static String readAll(final String path) throws IOException {
         return Files.lines(Paths.get(path), Charset.forName("UTF-8"))
                 .collect(Collectors.joining(System.getProperty("line.separator")));
